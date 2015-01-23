@@ -16,7 +16,7 @@ provider = Provider(name=u"Polidea Sp. z o.o.",
                     address2=u"00-682 Warszawa",
                     nip="7010185832",
                     bank_name="Bank",
-                    bank_account="11222233334444555566667777")
+                    bank_account="11 2222 3333 4444 5555 6666 7777")
 
 invoice_number = u"1/1/2015"
 invoice_date = u"23.01.2015"

@@ -44,7 +44,8 @@ class NumberedCanvas(Canvas):
         num_pages = len(self._saved_page_states)
         for state in self._saved_page_states:
             self.__dict__.update(state)
-            self.draw_page_number(num_pages)
+            if num_pages > 1:
+                self.draw_page_number(num_pages)
             Canvas.showPage(self)
         Canvas.save(self)
 
@@ -385,6 +386,8 @@ class SimpleInvoice(BaseInvoice):
 
         center_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize,
                                       alignment=TA_CENTER, leading=10)
+        center_normal_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize,
+                                      alignment=TA_CENTER, leading=10)
         right_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize, alignment=TA_RIGHT,
                                      leading=10)
         right_normal_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize,
@@ -413,30 +416,57 @@ class SimpleInvoice(BaseInvoice):
         row_top -= row_height
         row_idx += 1
 
-        # 23%
+        for key, item in self.invoice.generate_breakdown_vat().iteritems():
+            if row_idx % 2 == 1:
+                self.pdf.setFillColor(self.fillLightColor)
+                self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
+
+            par = Paragraph("%d%%" % item.vat, center_normal_style)
+            par_width, par_height = par.wrapOn(self.pdf, vat_max_width, 0)
+            par.drawOn(self.pdf, vat_left, row_top - (cell_padding + par_height))
+
+            par = Paragraph(format_amount(item.net), right_normal_style)
+            par_width, par_height = par.wrapOn(self.pdf, net_max_width, 0)
+            par.drawOn(self.pdf, net_left, row_top - (cell_padding + par_height))
+
+            par = Paragraph(format_amount(item.tax), right_normal_style)
+            par_width, par_height = par.wrapOn(self.pdf, tax_max_width, 0)
+            par.drawOn(self.pdf, tax_left, row_top - (cell_padding + par_height))
+
+            par = Paragraph(format_amount(item.gross), right_normal_style)
+            par_width, par_height = par.wrapOn(self.pdf, gross_max_width, 0)
+            par.drawOn(self.pdf, gross_left, row_top - (cell_padding + par_height))
+
+            row_top -= row_height
+
+            row_idx += 1
 
         if row_idx % 2 == 1:
             self.pdf.setFillColor(self.fillLightColor)
             self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
 
-        row_top -= row_height
-
-        row_idx += 1
-
-        # razem
-        if row_idx % 2 == 1:
-            self.pdf.setFillColor(self.fillLightColor)
-            self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
+        summary_data = self.invoice.items_summary()
 
         par = Paragraph(_("Razem:"), right_style)
         par_width, par_height = par.wrapOn(self.pdf, title_max_width, 0)
         par.drawOn(self.pdf, title_left, row_top - (cell_padding + par_height))
 
+        par = Paragraph(format_amount(summary_data["net"]), right_style)
+        par_width, par_height = par.wrapOn(self.pdf, net_max_width, 0)
+        par.drawOn(self.pdf, net_left, row_top - (cell_padding + par_height))
+
+        par = Paragraph(format_amount(summary_data["tax"]), right_style)
+        par_width, par_height = par.wrapOn(self.pdf, tax_max_width, 0)
+        par.drawOn(self.pdf, tax_left, row_top - (cell_padding + par_height))
+
+        par = Paragraph(format_amount(summary_data["gross"]), right_style)
+        par_width, par_height = par.wrapOn(self.pdf, gross_max_width, 0)
+        par.drawOn(self.pdf, gross_left, row_top - (cell_padding + par_height))
+
         row_top -= row_height
 
         row_idx += 1
 
-        # konto
         if row_idx % 2 == 1:
             self.pdf.setFillColor(self.fillLightColor)
             self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
@@ -450,7 +480,6 @@ class SimpleInvoice(BaseInvoice):
         par.drawOn(self.pdf, self.right - cell_padding - 200, row_top - (cell_padding + par_height))
 
         row_top -= row_height
-
 
         self.pdf.setStrokeColor(self.fillDarkColor)
         self.pdf.rect(self.left, row_top, table_width, table_top - row_top)

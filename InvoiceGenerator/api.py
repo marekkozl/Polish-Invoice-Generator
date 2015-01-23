@@ -136,7 +136,6 @@ class Invoice(UnicodeProperty):
         self.taxable_date = None
         self.invoice_number = invoice_number
         self.invoice_date = invoice_date
-        self.grouped_values = {}
 
         for attr in self._attrs:
             self.__setattr__(attr, '')
@@ -174,14 +173,21 @@ class Invoice(UnicodeProperty):
     def _get_grouped_items_by_tax(self):
         table = {}
         for item in self.items:
-            if not table.has_key(item.tax):
-                table[item.tax] = {'total': item.total, 'total_tax': item.total_tax, 'tax': item.count_tax()}
-            else:
-                table[item.tax]['total'] += item.total
-                table[item.tax]['total_tax'] +=  item.total_tax
-                table[item.tax]['tax'] +=  item.count_tax()
+            if item.tax not in table:
+                table[item.tax] = GroupedItem(item.tax)
+
+            table[item.tax].net += item.total_net_price
 
         return table
+
+    def items_summary(self):
+        summary = {"net": 0, "tax": 0, "gross": 0}
+        grouped_item = self._get_grouped_items_by_tax()
+        for item in grouped_item.itervalues():
+            summary["net"] += item.net
+            summary["tax"] += item.tax
+            summary["gross"] += item.gross
+        return summary
 
     def _round_result(self, price):
         if self.rounding_result:
