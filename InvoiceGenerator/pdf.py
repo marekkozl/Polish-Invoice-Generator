@@ -131,7 +131,7 @@ class SimpleInvoice(BaseInvoice):
         bottom = self.placeAndDateBottom - 10 * mm
         self.pdf.drawString(self.headerLeft, bottom, invoice_number_string)
 
-        invoice_date_string = _("Data dostawy*:")
+        invoice_date_string = _("Data dostawy:")
         self.pdf.setFont('DejaVu', self.bigFontSize)
         bottom -= self.bigFontSize + padding
         self.pdf.drawString(self.headerLeft, bottom, invoice_date_string)
@@ -159,11 +159,11 @@ class SimpleInvoice(BaseInvoice):
         bottom -= self.normalFontSize + 4 * mm
         self.pdf.drawString(self.left + padding_left, bottom, seller_name_string)
 
-        seller_address_string = self.invoice.provider.address
+        seller_address_string = self.invoice.provider.address1
         bottom -= self.normalFontSize
         self.pdf.drawString(self.left + padding_left, bottom, seller_address_string)
 
-        seller_code_string = "%(zip)s %(city)s" % {"zip": self.invoice.provider.zip, "city": self.invoice.provider.city}
+        seller_code_string = self.invoice.provider.address2
         bottom -= self.normalFontSize
         self.pdf.drawString(self.left + padding_left, bottom, seller_code_string)
 
@@ -184,11 +184,11 @@ class SimpleInvoice(BaseInvoice):
         bottom -= self.normalFontSize + 4 * mm
         self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_name_string)
 
-        purchaser_address_string = self.invoice.client.address
+        purchaser_address_string = self.invoice.client.address1
         bottom -= self.normalFontSize
         self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_address_string)
 
-        purchaser_code_string = "%(zip)s %(city)s" % {"zip": self.invoice.client.zip, "city": self.invoice.client.city}
+        purchaser_code_string = self.invoice.client.address2
         bottom -= self.normalFontSize
         self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_code_string)
 

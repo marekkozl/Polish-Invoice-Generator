@@ -15,13 +15,12 @@ class UnicodeProperty(object):
 
 
 class Address(UnicodeProperty):
-    _attrs = ('name', 'address', 'city', 'zip', 'bank_name', 'bank_account', 'nip')
+    _attrs = ('name', 'address1', 'address2', 'bank_name', 'bank_account', 'nip')
 
-    def __init__(self, name, address='', city='', zip='', bank_name='', bank_account='', nip=''):
+    def __init__(self, name, address1='', address2='', bank_name='', bank_account='', nip=''):
         self.name = name
-        self.address = address
-        self.city = city
-        self.zip = zip
+        self.address1 = address1
+        self.address2 = address2
         self.nip = nip
         self.bank_name = bank_name
         self.bank_account = bank_account
@@ -113,6 +112,19 @@ class Item(object):
             self._tax = 0.0
 
 
+class GroupedItem(object):
+    def __init__(self, vat):
+        self.net = 0
+        self.vat = float(vat)
+
+    @property
+    def tax(self):
+        return self.net * (self.vat / 100)
+
+    @property
+    def gross(self):
+        return self.net * ((100 + self.vat) / 100)
+
 class Invoice(UnicodeProperty):
     _attrs = ('title', 'variable_symbol', 'specific_symbol', 'pay_type',
               'currency', 'currency_locale', 'number')
@@ -129,6 +141,7 @@ class Invoice(UnicodeProperty):
         self.date = None
         self.payback = None
         self.taxable_date = None
+        self.grouped_values = {}
 
         for attr in self._attrs:
             self.__setattr__(attr, '')
