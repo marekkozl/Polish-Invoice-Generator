@@ -21,7 +21,7 @@ provider = Provider(name=u"Polidea Sp. z o.o.",
 invoice_number = 1/1/2015
 
 invoice = Invoice(client, provider)
-invoice.add_item(Item(name=u"Usługa programistyczna",
+invoice.add_item(Item(name=u"Usługa programistyczna\nusługa B która będzie bardzo długa",
                       count=1,
                       unit_price=1000,
                       tax=23))

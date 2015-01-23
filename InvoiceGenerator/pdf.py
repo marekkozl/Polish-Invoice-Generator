@@ -15,7 +15,7 @@ from api import Invoice
 
 
 def format_amount(amount):
-    return ("%.2f" % amount).replace(".", ",")
+    return "{:,.2f}".format(amount).replace(",", " ").replace(".", ",")
 
 
 class BaseInvoice(object):
@@ -297,24 +297,37 @@ class SimpleInvoice(BaseInvoice):
 
         idx = 1
         for item in self.invoice.items:
-            par = Paragraph(item.name, left_style)
-            par_width, par_height = par.wrapOn(self.pdf, name_max_width, 0)
+
+            name_height = 0
+            lines = item.name.split("\n")
+
+            for line in lines:
+                par = Paragraph(line, left_style)
+                par_width, par_height = par.wrapOn(self.pdf, name_max_width, 0)
+                name_height += par_height
 
             if idx % 2 == 1:
                 self.pdf.setFillColor(self.fillLightColor)
             else:
                 self.pdf.setFillColorRGB(1, 1, 1)
 
-            row_height = par_height + 2 * cell_padding
+            row_height = name_height + 2 * cell_padding
             self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1)
 
-            par.drawOn(self.pdf, name_left, row_top - (cell_padding + par_height))
+            name_height = 0
+            for line in lines:
+                par = Paragraph(line, left_style)
+                par_width, par_height = par.wrapOn(self.pdf, name_max_width, 0)
+                name_height += par_height
+                par.drawOn(self.pdf, name_left, row_top - (cell_padding + name_height))
+
             par = Paragraph("%d." % idx, center_style)
             par_width, par_height = par.wrapOn(self.pdf, lp_max_width, 0)
             par.drawOn(self.pdf, lp_left, row_top - (cell_padding + par_height))
 
             par = Paragraph("%d" % item.count, right_style)
             par_width, par_height = par.wrapOn(self.pdf, quantity_max_width, 0)
+            name_height += par_height
             par.drawOn(self.pdf, quantity_left, row_top - (cell_padding + par_height))
 
             par = Paragraph(item.unit, center_style)
