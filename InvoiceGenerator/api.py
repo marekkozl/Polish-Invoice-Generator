@@ -27,14 +27,7 @@ class Address(UnicodeProperty):
 
     @property
     def account_info(self):
-        return "{} {} {} {} {} {} {} {}".format(self.bank_name,
-                                                self.bank_account[0:2],
-                                                self.bank_account[2:6],
-                                                self.bank_account[6:10],
-                                                self.bank_account[10:14],
-                                                self.bank_account[14:18],
-                                                self.bank_account[18:22],
-                                                self.bank_account[22:26])
+        return "{} {}".format(self.bank_name, self.bank_account)
 
 
 class Client(Address):
