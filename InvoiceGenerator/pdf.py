@@ -10,7 +10,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.enums import *
 
-from InvoiceGenerator.conf import _, FONT_PATH, FONT_BOLD_PATH
+from conf import _, FONT_PATH, FONT_BOLD_PATH
 from api import Invoice
 
 

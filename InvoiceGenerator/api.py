@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from InvoiceGenerator.conf import _
+from conf import _
 
 __all__ = ['Client', 'Provider', 'Creator', 'Item', 'Invoice']
 
