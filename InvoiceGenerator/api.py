@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from PIL import Image
-import qrcode
-import datetime
 
 from InvoiceGenerator.conf import _
 
 __all__ = ['Client', 'Provider', 'Creator', 'Item', 'Invoice']
+
 
 class UnicodeProperty(object):
     _attrs = ()
@@ -15,89 +13,63 @@ class UnicodeProperty(object):
             value = unicode(value)
         self.__dict__[key] = value
 
-class Address(UnicodeProperty):
-    _attrs = ('summary', 'address', 'city', 'zip', 'phone', 'email',
-              'bank_name', 'bank_account', 'note', 'vat_id', 'ir',
-              'logo_filename')
 
-    def __init__(self, summary, address='', city='', zip='', phone='', email='',
-               bank_name='', bank_account='', note='', vat_id='', ir='',
-               logo_filename=''):
-        self.summary = summary
+class Address(UnicodeProperty):
+    _attrs = ('name', 'address', 'city', 'zip', 'bank_name', 'bank_account', 'nip')
+
+    def __init__(self, name, address='', city='', zip='', bank_name='', bank_account='', nip=''):
+        self.name = name
         self.address = address
         self.city = city
         self.zip = zip
-        self.phone = phone
-        self.email = email
+        self.nip = nip
         self.bank_name = bank_name
         self.bank_account = bank_account
-        self.note = note
-        self.vat_id = vat_id
-        self.ir = ir
-        self.logo_filename = logo_filename
 
+    @property
+    def account_info(self):
+        return "{} {} {} {} {} {} {} {}".format(self.bank_name,
+                                                self.bank_account[0:2],
+                                                self.bank_account[2:6],
+                                                self.bank_account[6:10],
+                                                self.bank_account[10:14],
+                                                self.bank_account[14:18],
+                                                self.bank_account[18:22],
+                                                self.bank_account[22:26])
 
-    def get_address_lines(self):
-        address_line = [
-            self.summary,
-            self.address,
-            u'%s %s' % (self.zip, self.city)
-            ]
-        if self.vat_id:
-            address_line.append(_(u'Vat in: %s') % self.vat_id)
-
-        if self.ir:
-            address_line.append(_(u'IR: %s') % self.ir)
-
-        return address_line
-
-    def get_contact_lines(self):
-        return [
-            self.phone,
-            self.email,
-            ]
 
 class Client(Address):
     pass
+
 
 class Provider(Address):
     pass
 
 
-class Creator(UnicodeProperty):
-    _attrs = ('name', 'stamp_filename')
-
-    def __init__(self, name, stamp_filename=''):
-        self.name = name
-        self.stamp_filename = stamp_filename
-
 class Item(object):
 
-    def __init__(self, count, price, description='', unit='', tax=0.0):
+    def __init__(self, name, count, unit_price, tax, unit=_("szt.")):
         self._count = float(count)
-        self._price = float(price)
-        self._description = unicode(description)
+        self._unit_price = float(unit_price)
+        self._name = unicode(name)
         self._unit = unicode(unit)
         self._tax = float(tax)
 
     @property
-    def total(self):
-        return self.price * self.count
+    def total_net_price(self):
+        return self.unit_price * self.count
 
     @property
     def total_tax(self):
-        return self.price * self.count * (1.0 + self.tax / 100.0)
-
-    def count_tax(self):
-        return self.total_tax - self.total
+        return self.total_net_price * (1.0 + self.tax / 100.0)
 
     @property
-    def description(self):
-        return self._description
+    def name(self):
+        return self._name
 
-    @description.setter
-    def description(self, value):
-        self._description = unicode(value)
+    @name.setter
+    def name(self, value):
+        self._name = unicode(value)
 
     @property
     def count(self):
@@ -111,15 +83,15 @@ class Item(object):
             self._count = 0
 
     @property
-    def price(self):
-        return self._price
+    def unit_price(self):
+        return self._unit_price
 
-    @price.setter
-    def price(self, value):
+    @unit_price.setter
+    def unit_price(self, value):
         try:
-            self._price = float(value)
+            self._unit_price = float(value)
         except TypeError:
-            self._price = 0.0
+            self._unit_price = 0.0
 
     @property
     def unit(self):
@@ -142,19 +114,17 @@ class Item(object):
 
 
 class Invoice(UnicodeProperty):
-    _attrs = ('title', 'variable_symbol', 'specific_symbol', 'paytype',
+    _attrs = ('title', 'variable_symbol', 'specific_symbol', 'pay_type',
               'currency', 'currency_locale', 'number')
 
     rounding_result = False
 
-    def __init__(self, client, provider, creator):
+    def __init__(self, client, provider):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
-        assert isinstance(creator, Creator)
 
         self.client = client
         self.provider = provider
-        self.creator = creator
         self._items = []
         self.date = None
         self.payback = None
@@ -219,59 +189,4 @@ class Invoice(UnicodeProperty):
              rows.append((vat, items['total'], items['total_tax'], items['tax']))
 
         return rows
-
-class Correction(Invoice):
-    _attrs = ('number', 'reason', 'title', 'variable_symbol', 'specific_symbol', 'paytype',
-              'currency', 'currency_locale', 'date', 'payback', 'taxable_date')
-
-    def __init__(self, client, provider, creator):
-        super(Correction, self).__init__(client, provider, creator)
-
-
-class QrCodeBuilder(object):
-
-    def __init__(self, invoice):
-        """
-        :param invoice: Invoice
-        """
-        self.invoice = invoice
-        self.qr = self._fill(invoice)
-        self.tmp_file = None
-
-    def _fill(self, invoice):
-        from qrplatba import QRPlatbaGenerator
-
-        qr_kwargs = {
-            'account': invoice.provider.bank_account,
-            'amount': invoice.price_tax,
-            'x_ss': invoice.specific_symbol,
-        }
-
-        if invoice.variable_symbol:
-            qr_kwargs['x_vs'] = invoice.variable_symbol
-
-        try:
-            qr_kwargs['due_date'] = invoice.payback.strftime("%Y%m%d")
-        except AttributeError:
-            pass
-
-        qr_kwargs = {k: v for k, v in qr_kwargs.items() if v}
-        
-        return QRPlatbaGenerator(**qr_kwargs)
-
-    @property
-    def filename(self):
-        from tempfile import NamedTemporaryFile
-        img = qrcode.make(self.qr.get_text())
-
-        self.tmp_file = NamedTemporaryFile(mode='w+b', suffix='.png',
-                                           delete=False)
-        img.save(self.tmp_file)
-        self.tmp_file.close()
-        return self.tmp_file.name
-
-    def destroy(self):
-        if hasattr(self.tmp_file, 'name'):
-            import os
-            os.unlink(self.tmp_file.name)
 
