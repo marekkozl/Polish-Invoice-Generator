@@ -127,11 +127,11 @@ class GroupedItem(object):
 
 class Invoice(UnicodeProperty):
     _attrs = ('title', 'variable_symbol', 'specific_symbol', 'pay_type',
-              'currency', 'currency_locale', 'number')
+              'currency', 'currency_locale')
 
     rounding_result = False
 
-    def __init__(self, client, provider):
+    def __init__(self, client, provider, invoice_number, invoice_date):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
 
@@ -141,6 +141,8 @@ class Invoice(UnicodeProperty):
         self.date = None
         self.payback = None
         self.taxable_date = None
+        self.invoice_number = invoice_number
+        self.invoice_date = invoice_date
         self.grouped_values = {}
 
         for attr in self._attrs:

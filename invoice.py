@@ -18,9 +18,10 @@ provider = Provider(name=u"Polidea Sp. z o.o.",
                     bank_name="Bank",
                     bank_account="11222233334444555566667777")
 
-invoice_number = 1/1/2015
+invoice_number = u"1/1/2015"
+invoice_date = u"23.01.2015"
 
-invoice = Invoice(client, provider)
+invoice = Invoice(client, provider, invoice_number, invoice_date)
 invoice.add_item(Item(name=u"Usługa programistyczna\nusługa B która będzie bardzo długa",
                       count=1,
                       unit_price=1000,

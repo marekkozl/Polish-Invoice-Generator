@@ -117,7 +117,7 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.setFillColor(self.textColor)
 
     def drawPlaceAndDate(self):
-        place_and_date_string = "Wystawiono dnia 21-01-2015, Warszawa"  # TODO: String
+        place_and_date_string = _("Wystawiono dnia {}, Warszawa").format(self.invoice.invoice_date)
         self.placeAndDateBottom = self.top
         self.pdf.setFont('DejaVu', self.tinyFontSize)
         self.pdf.drawString(self.left, self.placeAndDateBottom, place_and_date_string)
@@ -126,7 +126,7 @@ class SimpleInvoice(BaseInvoice):
         self.headerLeft = self.width / 2
         padding = 1.5 * mm
         value_padding = 45 * mm
-        invoice_number_string = "Faktura VAT nr 21/1/2015"  # TODO: String
+        invoice_number_string = _("Faktura VAT nr {}".format(self.invoice.invoice_number))
         self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
         bottom = self.placeAndDateBottom - 10 * mm
         self.pdf.drawString(self.headerLeft, bottom, invoice_number_string)
@@ -136,7 +136,7 @@ class SimpleInvoice(BaseInvoice):
         bottom -= self.bigFontSize + padding
         self.pdf.drawString(self.headerLeft, bottom, invoice_date_string)
 
-        invoice_date_value_string = "21-01-2015"
+        invoice_date_value_string = self.invoice.invoice_date
         self.pdf.drawString(self.headerLeft + value_padding, bottom, invoice_date_value_string)
 
         invoice_payment_string = _("Sposób zapłaty:")
