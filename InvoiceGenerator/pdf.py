@@ -11,6 +11,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.enums import *
 
 from conf import _, FONT_PATH, FONT_BOLD_PATH
+import conf
 from api import Invoice
 
 
@@ -55,9 +56,16 @@ class NumberedCanvas(Canvas):
             _("strona %(page_number)d z %(page_count)d") % {"page_number": self._pageNumber, "page_count": page_count})
 
 
+from gettext import NullTranslations
+
 class SimpleInvoice(BaseInvoice):
 
-    def __init__(self, invoice, filename):
+    def __init__(self, invoice, filename, language=''):
+        if language == 'en':
+            conf.lang = 'en'
+        else:
+            conf.lang = 'pl'
+
         super(SimpleInvoice, self).__init__(invoice)
 
         self.pageSize = A4
@@ -87,7 +95,6 @@ class SimpleInvoice(BaseInvoice):
         self.gen()
 
     def gen(self):
-        self.drawPlaceAndDate()
         self.drawHeaders()
 
         company_data_top = self.height - 60 * mm
@@ -117,35 +124,37 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.rect(0, y, self.left - 2 * mm, height, stroke=False, fill=True)
         self.pdf.setFillColor(self.textColor)
 
-    def drawPlaceAndDate(self):
-        place_and_date_string = _("Wystawiono dnia {}").format(self.invoice.invoice_date)
-        self.placeAndDateBottom = self.top
-        self.pdf.setFont('DejaVu', self.tinyFontSize)
-        self.pdf.drawString(self.left, self.placeAndDateBottom, place_and_date_string)
-
     def drawHeaders(self):
         self.headerLeft = self.width / 2
         padding = 1.5 * mm
-        value_padding = 50 * mm
-        invoice_number_string = _("Faktura VAT nr {}".format(self.invoice.invoice_number))
+        value_padding = 85 * mm
+        invoice_number_string = _("Faktura VAT nr: {}").format(self.invoice.invoice_number)
         self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
-        bottom = self.placeAndDateBottom - 10 * mm
-        self.pdf.drawString(self.headerLeft, bottom, invoice_number_string)
+        bottom = self.top
+        self.pdf.drawString(self.left, bottom, invoice_number_string)
+
+        self.pdf.setFont('DejaVu', self.bigFontSize)
+        bottom -= self.bigFontSize + padding*3
+        self.pdf.drawString(self.left, bottom, _("Wystawiono dnia:"))
+
+        date_string = self.invoice.invoice_date
+        self.pdf.drawString(self.left + value_padding, bottom, date_string)
 
         invoice_date_string = _("Data wykonania usługi:")
         self.pdf.setFont('DejaVu', self.bigFontSize)
         bottom -= self.bigFontSize + padding
-        self.pdf.drawString(self.headerLeft, bottom, invoice_date_string)
+        self.pdf.drawString(self.left, bottom, invoice_date_string)
 
         invoice_date_value_string = self.invoice.invoice_date
-        self.pdf.drawString(self.headerLeft + value_padding, bottom, invoice_date_value_string)
+        self.pdf.drawString(self.left + value_padding, bottom, invoice_date_value_string)
 
-        invoice_payment_string = _("Sposób zapłaty:")
+        self.pdf.setFont('DejaVu', self.bigFontSize)
         bottom -= self.bigFontSize + padding
-        self.pdf.drawString(self.headerLeft, bottom, invoice_payment_string)
+        self.pdf.drawString(self.left, bottom, _("Miejsce wystawienia:"))
 
-        invoice_payment_value_string = "Przelew"
-        self.pdf.drawString(self.headerLeft + value_padding, bottom, invoice_payment_value_string)
+        place_string = self.invoice.invoice_place
+        self.pdf.drawString(self.left + value_padding, bottom, place_string)
+
 
     def drawSeller(self, top):
         self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
@@ -161,16 +170,21 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.drawString(self.left + padding_left, bottom, seller_name_string)
 
         seller_address_string = self.invoice.provider.address1
-        bottom -= self.normalFontSize
+        bottom -= self.normalFontSize + mm
         self.pdf.drawString(self.left + padding_left, bottom, seller_address_string)
 
         seller_code_string = self.invoice.provider.address2
-        bottom -= self.normalFontSize
+        bottom -= self.normalFontSize + mm
         self.pdf.drawString(self.left + padding_left, bottom, seller_code_string)
 
-        seller_nip_string = "NIP %(nip)s" % {"nip": self.invoice.provider.nip}
-        bottom -= self.normalFontSize
-        self.pdf.drawString(self.left + padding_left, bottom, seller_nip_string)
+        provider_country_string = self.invoice.provider.country
+        bottom -= self.normalFontSize + mm
+        self.pdf.drawString(self.left + padding_left, bottom, provider_country_string)
+
+        if self.invoice.provider.nip and self.invoice.provider.nip.strip():
+            seller_nip_string = _('NIP: %(nip)s') % {"nip": self.invoice.provider.nip}
+            bottom -= self.normalFontSize + mm
+            self.pdf.drawString(self.left + padding_left, bottom, seller_nip_string)
 
         return bottom
 
@@ -186,16 +200,21 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_name_string)
 
         purchaser_address_string = self.invoice.client.address1
-        bottom -= self.normalFontSize
+        bottom -= self.normalFontSize + mm
         self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_address_string)
 
         purchaser_code_string = self.invoice.client.address2
-        bottom -= self.normalFontSize
+        bottom -= self.normalFontSize + mm
         self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_code_string)
 
-        purchaser_nip_string = "NIP %(nip)s" % {"nip": self.invoice.client.nip}
-        bottom -= self.normalFontSize
-        self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_nip_string)
+        purchaser_country_string = self.invoice.client.country
+        bottom -= self.normalFontSize + mm
+        self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_country_string)
+
+        if self.invoice.client.nip and self.invoice.client.nip.strip():
+            purchaser_nip_string = _('NIP: %(nip)s') % {"nip": self.invoice.client.nip}
+            bottom -= self.normalFontSize + mm
+            self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_nip_string)
 
         return bottom
 
@@ -326,7 +345,7 @@ class SimpleInvoice(BaseInvoice):
             par_width, par_height = par.wrapOn(self.pdf, lp_max_width, 0)
             par.drawOn(self.pdf, lp_left, row_top - (cell_padding + par_height))
 
-            par = Paragraph("%d" % item.count, right_style)
+            par = Paragraph(format_amount(item.count), right_style)
             par_width, par_height = par.wrapOn(self.pdf, quantity_max_width, 0)
             name_height += par_height
             par.drawOn(self.pdf, quantity_left, row_top - (cell_padding + par_height))
@@ -451,35 +470,43 @@ class SimpleInvoice(BaseInvoice):
         par_width, par_height = par.wrapOn(self.pdf, title_max_width, 0)
         par.drawOn(self.pdf, title_left, row_top - (cell_padding + par_height))
 
-        par = Paragraph(format_amount(summary_data["net"]), right_style)
+        par = Paragraph(self.invoice.currency_string+format_amount(summary_data["net"]), right_style)
         par_width, par_height = par.wrapOn(self.pdf, net_max_width, 0)
         par.drawOn(self.pdf, net_left, row_top - (cell_padding + par_height))
 
-        par = Paragraph(format_amount(summary_data["tax"]), right_style)
+        par = Paragraph(self.invoice.currency_string+format_amount(summary_data["tax"]), right_style)
         par_width, par_height = par.wrapOn(self.pdf, tax_max_width, 0)
         par.drawOn(self.pdf, tax_left, row_top - (cell_padding + par_height))
 
-        par = Paragraph(format_amount(summary_data["gross"]), right_style)
+        par = Paragraph(self.invoice.currency_string+format_amount(summary_data["gross"]), right_style)
         par_width, par_height = par.wrapOn(self.pdf, gross_max_width, 0)
         par.drawOn(self.pdf, gross_left, row_top - (cell_padding + par_height))
 
         row_top -= row_height
-
-        row_idx += 1
-
-        if row_idx % 2 == 1:
-            self.pdf.setFillColor(self.fillLightColor)
-            self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
-
-        par = Paragraph(_("Konto bankowe:"), right_style)
-        par_width, par_height = par.wrapOn(self.pdf, title_max_width, 0)
-        par.drawOn(self.pdf, title_left, row_top - (cell_padding + par_height))
-
-        par = Paragraph(self.invoice.provider.account_info, right_normal_style)
-        par_width, par_height = par.wrapOn(self.pdf, 200, 0)
-        par.drawOn(self.pdf, self.right - cell_padding - 200, row_top - (cell_padding + par_height))
+        self.pdf.setStrokeColor(self.fillDarkColor)
+        self.pdf.rect(self.left, row_top, table_width, table_top - row_top)
 
         row_top -= row_height
 
-        self.pdf.setStrokeColor(self.fillDarkColor)
-        self.pdf.rect(self.left, row_top, table_width, table_top - row_top)
+        value_padding = 85 * mm
+        self.pdf.setStrokeColor(self.textColor)
+        self.pdf.setFillColor(self.textColor)
+        self.pdf.setFont('DejaVu', self.bigFontSize)
+
+        row_top -= 1.5 * self.bigFontSize
+        self.pdf.drawString(self.left, row_top, _("Konto bankowe:"))
+        self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_account)
+
+        if self.invoice.provider.bank_data.strip():
+            row_top -= 1.5 * self.bigFontSize
+            self.pdf.drawString(self.left, row_top, _("Bank:"))
+            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_data)
+
+        row_top -= 1.5 * self.bigFontSize
+        self.pdf.drawString(self.left, row_top, _("Termin płatności:"))
+        self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.payment_terms)
+
+        if self.invoice.provider.exchange_rate.strip():
+            row_top -= 1.5 * self.bigFontSize
+            self.pdf.drawString(self.left, row_top, _("Kurs NBP:"))
+            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.exchange_rate)

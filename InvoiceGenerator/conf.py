@@ -1,37 +1,49 @@
-import os
-import locale
-import gettext
+# -*- coding: utf-8 -*-
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(os.path.join(__file__)))
 APP_NAME = "InvoiceGenerator"
-
-LANGUAGE = 'en'
-
-LOCALE_DIR = os.path.join(PROJECT_ROOT, 'locale')
-
-DEFAULT_LANGUAGES = os.environ.get('LANG', '').split(':')
-DEFAULT_LANGUAGES += ['en_US', 'pl_PL']
-
-languages = []
-lc, encoding = locale.getdefaultlocale()
-if lc:
-    languages = [lc]
-
-languages += DEFAULT_LANGUAGES
-mo_location = LOCALE_DIR
-
-gettext.install(True, localedir=None, unicode=1)
-gettext.find(APP_NAME, mo_location)
-gettext.textdomain(APP_NAME)
-gettext.bind_textdomain_codeset(APP_NAME, "UTF-8")
-try:
-    t = gettext.translation(APP_NAME, mo_location, languages=languages, fallback=True)
-    _ = lambda message: t.gettext(message).decode('utf8')
-except IOError:
-    _ = lambda x: x
-    print "Fix this!"
-except ImportError:
-    _ = lambda x: x
 
 FONT_PATH = '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf'
 FONT_BOLD_PATH = '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf'
+
+lang = 'pl'
+
+def _(message):
+    if lang == 'pl':
+        return message
+    else:
+        t = pl_2_plen.get(message)
+        if t == None:
+            print 'No translation for text: '+message
+        else:
+            if t=='':
+                return message
+        return t
+
+pl_2_plen = {
+    "szt.":'szt./each',
+    "strona %(page_number)d z %(page_count)d":'strona %(page_number)d z %(page_count)d/page %(page_number)d out of %(page_count)d',
+    "Wystawiono dnia:":'Wystawiono dnia/Date of issue:',
+    "Miejsce wystawienia:":'Miejsce wystawienia/Place of issue:',
+    "Faktura VAT nr: {}":'Faktura VAT nr/Invoice no: {}',
+    "Data wykonania usługi:":'Data wykonania usługi/Date of shipment:',
+    "Sposób zapłaty:":'',
+    "Sprzedawca:":'Sprzedawca/Seller:',
+    "Nabywca:":'Nabywca/Client:',
+    "NIP: %(nip)s":'NIP/Tax Id: %(nip)s',
+    "POZYCJE FAKTURY":'POZYCJE FAKTURY/ITEMS',
+    "Lp.":'Lp.<br/>No.',
+    "Nazwa towaru lub usługi":'Nazwa towaru lub usługi<br/>Description',
+    "Ilość":'Ilość<br/>Qty',
+    "Jedn.":'Jedn.<br/>UM',
+    "Cena jedn. netto":'Cena jedn. netto<br/>Net price',
+    "Wartość netto":'Wartość netto<br/>Net worth',
+    "Stawka VAT":'Stawka VAT<br/>VAT [%]',
+    "Wartość brutto":'Wartość brutto<br/>Gross worth',
+    "PODSUMOWANIE":'PODSUMOWANIE/SUMMARY',
+    "VAT":'VAT',
+    "Razem:":'Razem/Total',
+    "Termin płatności:":'Termin płatności/Payment terms:',
+    "Konto bankowe:":'Konto bankowe/Bank account:',
+    "Bank:":'Bank:',
+    "Kurs NBP:":'Kurs NBP/Official exchange rate:'
+}

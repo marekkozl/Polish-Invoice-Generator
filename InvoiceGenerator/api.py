@@ -15,19 +15,18 @@ class UnicodeProperty(object):
 
 
 class Address(UnicodeProperty):
-    _attrs = ('name', 'address1', 'address2', 'bank_name', 'bank_account', 'nip')
+    _attrs = ('name', 'address1', 'address2', 'country', 'bank_data', 'bank_account', 'payment_terms', 'nip', 'echange_rate')
 
-    def __init__(self, name, address1='', address2='', bank_name='', bank_account='', nip=''):
+    def __init__(self, name, address1='', address2='', country='', bank_data='', bank_account='', payment_terms='', nip='', exchange_rate=''):
         self.name = name
         self.address1 = address1
         self.address2 = address2
+        self.country = country
         self.nip = nip
-        self.bank_name = bank_name
+        self.bank_data = bank_data
         self.bank_account = bank_account
-
-    @property
-    def account_info(self):
-        return "{} {}".format(self.bank_name, self.bank_account)
+        self.payment_terms = payment_terms
+        self.exchange_rate = exchange_rate
 
 
 class Client(Address):
@@ -124,7 +123,7 @@ class Invoice(UnicodeProperty):
 
     rounding_result = False
 
-    def __init__(self, client, provider, invoice_number, invoice_date):
+    def __init__(self, client, provider, invoice_number, invoice_date, invoice_place, currency_string):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
 
@@ -136,6 +135,8 @@ class Invoice(UnicodeProperty):
         self.taxable_date = None
         self.invoice_number = invoice_number
         self.invoice_date = invoice_date
+        self.invoice_place = invoice_place
+        self.currency_string = currency_string
 
         for attr in self._attrs:
             self.__setattr__(attr, '')
