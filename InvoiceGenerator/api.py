@@ -123,7 +123,7 @@ class Invoice(UnicodeProperty):
 
     rounding_result = False
 
-    def __init__(self, client, provider, invoice_number, invoice_date, invoice_place, currency_string):
+    def __init__(self, client, provider, invoice_number, invoice_date, invoice_place, currency_string='zł ', notes=''):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
 
@@ -137,6 +137,7 @@ class Invoice(UnicodeProperty):
         self.invoice_date = invoice_date
         self.invoice_place = invoice_place
         self.currency_string = currency_string
+        self.notes = notes
 
         for attr in self._attrs:
             self.__setattr__(attr, '')

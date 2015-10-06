@@ -45,5 +45,6 @@ pl_2_plen = {
     "Termin płatności:":'Termin płatności/Payment terms:',
     "Konto bankowe:":'Konto bankowe/Bank account:',
     "Bank:":'Bank:',
-    "Kurs NBP:":'Kurs NBP/Official exchange rate:'
+    "Kurs NBP:":'Kurs NBP/Official exchange rate:',
+    "Uwagi:":'Uwagi/Notes:'
 }

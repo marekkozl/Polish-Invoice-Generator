@@ -510,3 +510,8 @@ class SimpleInvoice(BaseInvoice):
             row_top -= 1.5 * self.bigFontSize
             self.pdf.drawString(self.left, row_top, _("Kurs NBP:"))
             self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.exchange_rate)
+
+        if self.invoice.notes and self.invoice.notes.strip():
+            row_top -= 1.5 * self.bigFontSize
+            self.pdf.drawString(self.left, row_top, _("Uwagi:"))
+            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.notes)
