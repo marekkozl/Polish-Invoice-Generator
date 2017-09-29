@@ -7,13 +7,13 @@ import locale
 locale.setlocale(locale.LC_ALL, '')
 
 client = Client(name=u"Polidea Sp. z o.o.",
-                address1=u"Hoża 76/78",
-                address2=u"00-682 Warszawa",
+                address1=u"Przeskok 2",
+                address2=u"00-032 Warszawa",
                 nip="7010185832")
 
 provider = Provider(name=u"Polidea Sp. z o.o.",
-                    address1=u"Hoża 76/78",
-                    address2=u"00-682 Warszawa",
+                    address1=u"Przeskok 2",
+                    address2=u"00-032 Warszawa",
                     nip="7010185832",
                     bank_name="Bank",
                     bank_account="11 2222 3333 4444 5555 6666 7777")
