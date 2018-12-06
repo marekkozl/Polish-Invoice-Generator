@@ -514,4 +514,9 @@ class SimpleInvoice(BaseInvoice):
         if self.invoice.notes and self.invoice.notes.strip():
             row_top -= 1.5 * self.bigFontSize
             self.pdf.drawString(self.left, row_top, _("Uwagi:"))
-            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.notes)
+            lines = self.invoice.notes.split("\n")
+
+            for line in lines:
+                self.pdf.drawString(self.left + value_padding, row_top, line)
+                row_top -= 1.5 * self.bigFontSize
+            
