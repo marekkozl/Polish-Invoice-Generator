@@ -39,12 +39,14 @@ class Provider(Address):
 
 class Item(object):
 
-    def __init__(self, name, count, unit_price, tax, unit=_("szt.")):
+    def __init__(self, name, count, unit_price, tax, use_vat=True, use_vat_txt='', unit=_("szt.")):
         self._count = float(count)
         self._unit_price = float(unit_price)
         self._name = unicode(name)
         self._unit = unicode(unit)
         self._tax = float(tax)
+        self._use_vat = bool(use_vat)
+        self._use_vat_txt = unicode(use_vat_txt)
 
     @property
     def total_net_price(self):
@@ -52,7 +54,7 @@ class Item(object):
 
     @property
     def total_tax(self):
-        return self.total_net_price * (1.0 + self.tax / 100.0)
+        return self.total_net_price + round(self.total_net_price * (self.tax / 100), 2)
 
     @property
     def name(self):
@@ -103,19 +105,27 @@ class Item(object):
         except TypeError:
             self._tax = 0.0
 
+    @property
+    def use_vat(self):
+        return self._use_vat
+
+    @property
+    def use_vat_txt(self):
+        return self._use_vat_txt
 
 class GroupedItem(object):
-    def __init__(self, vat):
+    def __init__(self, vat, vat_txt):
         self.net = 0
         self.vat = float(vat)
+        self.vat_txt = vat_txt
 
     @property
     def tax(self):
-        return self.net * (self.vat / 100)
+        return round(self.net * (self.vat / 100), 2)
 
     @property
     def gross(self):
-        return self.net * ((100 + self.vat) / 100)
+        return self.net + self.tax
 
 class Invoice(UnicodeProperty):
     _attrs = ('title', 'variable_symbol', 'specific_symbol', 'pay_type',
@@ -175,10 +185,13 @@ class Invoice(UnicodeProperty):
     def _get_grouped_items_by_tax(self):
         table = {}
         for item in self.items:
+            key = item.tax
+            if item.use_vat == False:
+                key = -1
             if item.tax not in table:
-                table[item.tax] = GroupedItem(item.tax)
+                table[key] = GroupedItem(item.tax, item.use_vat_txt)
 
-            table[item.tax].net += item.total_net_price
+            table[key].net += item.total_net_price
 
         return table
 

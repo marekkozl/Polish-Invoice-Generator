@@ -362,7 +362,10 @@ class SimpleInvoice(BaseInvoice):
             par_width, par_height = par.wrapOn(self.pdf, price_net_max_width, 0)
             par.drawOn(self.pdf, price_net_left, row_top - (cell_padding + par_height))
 
-            par = Paragraph("%d%%" % item.tax, right_style)
+            if item.use_vat == False:
+                 par = Paragraph(item.use_vat_txt, right_style)
+            else:
+                par = Paragraph("%d%%" % item.tax, right_style)
             par_width, par_height = par.wrapOn(self.pdf, vat_max_width, 0)
             par.drawOn(self.pdf, vat_left, row_top - (cell_padding + par_height))
 
@@ -440,7 +443,10 @@ class SimpleInvoice(BaseInvoice):
                 self.pdf.setFillColor(self.fillLightColor)
                 self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
 
-            par = Paragraph("%d%%" % item.vat, center_normal_style)
+            if key == -1:
+                par = Paragraph(item.vat_txt, center_normal_style)
+            else:
+                par = Paragraph("%d%%" % item.vat, center_normal_style)
             par_width, par_height = par.wrapOn(self.pdf, vat_max_width, 0)
             par.drawOn(self.pdf, vat_left, row_top - (cell_padding + par_height))
 
