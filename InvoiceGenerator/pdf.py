@@ -22,7 +22,7 @@ def format_amount(amount):
 class BaseInvoice(object):
 
     def __init__(self, invoice):
-        assert isinstance(invoice, Invoice)
+        # assert isinstance(invoice, Invoice)
 
         self.invoice = invoice
         self.pdf = None
@@ -438,7 +438,7 @@ class SimpleInvoice(BaseInvoice):
         row_top -= row_height
         row_idx += 1
 
-        for key, item in self.invoice.generate_breakdown_vat().iteritems():
+        for key, item in self.invoice.generate_breakdown_vat().items():
             if row_idx % 2 == 1:
                 self.pdf.setFillColor(self.fillLightColor)
                 self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)

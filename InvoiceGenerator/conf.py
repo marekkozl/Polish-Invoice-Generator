@@ -2,8 +2,8 @@
 
 APP_NAME = "InvoiceGenerator"
 
-FONT_PATH = '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf'
-FONT_BOLD_PATH = '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf'
+FONT_PATH = './/fonts//DejaVuSans.ttf'
+FONT_BOLD_PATH = './/fonts//DejaVuSans-Bold.ttf'
 
 lang = 'pl'
 
@@ -13,7 +13,7 @@ def _(message):
     else:
         t = pl_2_plen.get(message)
         if t == None:
-            print 'No translation for text: '+message
+            print('No translation for text: '+message)
         else:
             if t=='':
                 return message

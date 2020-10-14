@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# import sys
+# sys.path.append('C:\\Users\\marekkoz\\Downloads\\faktury\\Polish-Invoice-Generator\\InvoiceGenerator')
 from conf import _
 
 __all__ = ['Client', 'Provider', 'Creator', 'Item', 'Invoice']
@@ -10,7 +12,7 @@ class UnicodeProperty(object):
 
     def __setattr__(self, key, value):
         if key in self._attrs:
-            value = unicode(value)
+            value = str(value)
         self.__dict__[key] = value
 
 
@@ -42,11 +44,11 @@ class Item(object):
     def __init__(self, name, count, unit_price, tax, use_vat=True, use_vat_txt='', unit=_("szt.")):
         self._count = float(count)
         self._unit_price = float(unit_price)
-        self._name = unicode(name)
-        self._unit = unicode(unit)
+        self._name = str(name)
+        self._unit = str(unit)
         self._tax = float(tax)
         self._use_vat = bool(use_vat)
-        self._use_vat_txt = unicode(use_vat_txt)
+        self._use_vat_txt = str(use_vat_txt)
 
     @property
     def total_net_price(self):
@@ -62,7 +64,7 @@ class Item(object):
 
     @name.setter
     def name(self, value):
-        self._name = unicode(value)
+        self._name = str(value)
 
     @property
     def count(self):
@@ -92,7 +94,7 @@ class Item(object):
 
     @unit.setter
     def unit(self, value):
-        self._unit = unicode(value)
+        self._unit = str(value)
 
     @property
     def tax(self):
@@ -198,7 +200,7 @@ class Invoice(UnicodeProperty):
     def items_summary(self):
         summary = {"net": 0, "tax": 0, "gross": 0}
         grouped_item = self._get_grouped_items_by_tax()
-        for item in grouped_item.itervalues():
+        for item in grouped_item.values():
             summary["net"] += item.net
             summary["tax"] += item.tax
             summary["gross"] += item.gross
