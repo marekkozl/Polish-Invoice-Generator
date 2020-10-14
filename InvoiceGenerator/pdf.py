@@ -137,7 +137,7 @@ class SimpleInvoice(BaseInvoice):
         bottom -= self.bigFontSize + padding*3
         self.pdf.drawString(self.left, bottom, _("Wystawiono dnia:"))
 
-        date_string = self.invoice.invoice_date
+        date_string = self.invoice.invoice_issue_date
         self.pdf.drawString(self.left + value_padding, bottom, date_string)
 
         invoice_date_string = _("Data wykonania usługi:")

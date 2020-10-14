@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# import sys
-# sys.path.append('C:\\Users\\marekkoz\\Downloads\\faktury\\Polish-Invoice-Generator\\InvoiceGenerator')
+import sys
+sys.path.append('C:\\Repos\\Polish-Invoice-Generator\\InvoiceGenerator')
 from conf import _
 
 __all__ = ['Client', 'Provider', 'Creator', 'Item', 'Invoice']
@@ -135,7 +135,7 @@ class Invoice(UnicodeProperty):
 
     rounding_result = False
 
-    def __init__(self, client, provider, invoice_number, invoice_date, invoice_place, currency_string='zł ', notes=''):
+    def __init__(self, client, provider, invoice_number, invoice_issue_date, invoice_date, invoice_place, currency_string='zł ', notes=''):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
 
@@ -145,6 +145,7 @@ class Invoice(UnicodeProperty):
         self.date = None
         self.payback = None
         self.taxable_date = None
+        self.invoice_issue_date = invoice_issue_date
         self.invoice_number = invoice_number
         self.invoice_date = invoice_date
         self.invoice_place = invoice_place
