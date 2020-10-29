@@ -5,6 +5,12 @@ APP_NAME = 'InvoiceGenerator'
 FONT_PATH = './/fonts//DejaVuSans.ttf'
 FONT_BOLD_PATH = './/fonts//DejaVuSans-Bold.ttf'
 
+PATH_TO_DATA_SOURCES = 'C:\\Repos\\scraping-ebay\\'
+PATH_TO_GENERATED_INVOICES = './/invoice_data//'
+CRAWLER_CATEGORIES = ['books', 'carpets', 'clothes', 'computers', 'console', 'furniture', 'kids', 'wine']
+
+FAKER_REGION = 'en_US'
+
 lang = 'en'
 
 pl_2_plen = {

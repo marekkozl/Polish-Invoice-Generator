@@ -7,14 +7,14 @@ import random
 from datetime import datetime
 from datetime import timedelta
 import locale
+import csv
+from conf import *
+
 locale.setlocale(locale.LC_ALL, '')
 
-region = 'en_US'
-fake = Faker(region)
-
+fake = Faker(FAKER_REGION)
 
 def get_random_invoice_dates():
-
     date_start = fake.date_between(start_date='-10y', end_date='today')
     date_end = fake.date_between_dates(
         date_start, date_start + timedelta(days=random.randint(0, 30)))
@@ -27,8 +27,9 @@ def get_random_provider():
                         address1=street,
                         address2=address,
                         nip=fake.itin(),
-                        bank_data="Bank",
-                        bank_account=fake.pyint(min_value=10000000000000000000000000, max_value=99999999999999999999999999))
+                        bank_data=None,
+                        bank_account=None,
+                        payment_terms=None) # bank_account=fake.pyint(min_value=10000000000000000000000000, max_value=99999999999999999999999999))
     return provider
 
 
@@ -42,24 +43,40 @@ def get_random_client():
     return client
 
 
-def get_random_item_from_category(category):
-    #todo
-    return Item(name=u"Service",
-                count=fake.pyint(min_value=1, max_value=100),
-                unit_price=fake.pyint(min_value=100, max_value=1000),
-                tax=23)
+def get_random_category():
+    return random.choice(CRAWLER_CATEGORIES)
+
+def get_random_product_from_csv(category_list):
+    product = [[]]
+    index = 0
+    while '$' not in product[0]:
+        index = fake.pyint(min_value=0, max_value=len(category_list)-1)
+        product = category_list[index]
+        category_list.pop(index)
+    return product[0], product[1], index
+    
+def get_random_item_from_category(category_list):
+    price, product_name, index = get_random_product_from_csv(category_list)
+    return Item(name=str(product_name),
+                count=fake.pyint(min_value=1, max_value=5),
+                unit_price=float(price.replace('$', '').replace(',', '')),
+                tax=10), index
 
 
 def generate_invoices(number):
-    for _ in range(number):
+    for i in range(number):
         start_date, end_date = get_random_invoice_dates()
         invoice = Invoice(get_random_client(), get_random_provider(), fake.pyint(min_value=10000000, max_value=99999999),
                           start_date, end_date, fake.city())
-        for _ in range(fake.pyint(min_value=1, max_value=7)):
-            item = get_random_item_from_category('nil')
-            invoice.add_item(item)
-        SimpleInvoice(invoice, 'invoice_'+str(i)+'.pdf', 'en')
+        category = get_random_category()
+        with open(PATH_TO_DATA_SOURCES + category +'.csv', newline='', encoding="utf8") as csvfile:
+            category_list = list(csv.reader(csvfile, delimiter=','))
+            for _ in range(fake.pyint(min_value=1, max_value=7)):
+                item, _ = get_random_item_from_category(category_list)
+                # category_list.pop(index) check this
+                invoice.add_item(item)
+            SimpleInvoice(invoice, PATH_TO_GENERATED_INVOICES + 'invoice_'+str(i)+'.pdf', 'en')
 
 
 if __name__ == "__main__":
-    generate_invoices(4)
+    generate_invoices(1000)

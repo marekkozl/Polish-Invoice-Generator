@@ -135,7 +135,7 @@ class Invoice(UnicodeProperty):
 
     rounding_result = False
 
-    def __init__(self, client, provider, invoice_number, invoice_issue_date, invoice_date, invoice_place, currency_string='zł ', notes=''):
+    def __init__(self, client, provider, invoice_number, invoice_issue_date, invoice_date, invoice_place, currency_string='$ ', notes=''):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
 
