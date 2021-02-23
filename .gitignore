@@ -4,3 +4,5 @@
 InvoiceGenerator.egg-info/
 build/
 dist/
+invoice_data/
+debug.log

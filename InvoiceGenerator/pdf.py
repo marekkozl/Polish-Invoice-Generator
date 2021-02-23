@@ -22,7 +22,7 @@ def format_amount(amount):
 class BaseInvoice(object):
 
     def __init__(self, invoice):
-        assert isinstance(invoice, Invoice)
+        # assert isinstance(invoice, Invoice)
 
         self.invoice = invoice
         self.pdf = None
@@ -137,23 +137,23 @@ class SimpleInvoice(BaseInvoice):
         bottom -= self.bigFontSize + padding*3
         self.pdf.drawString(self.left, bottom, _("Wystawiono dnia:"))
 
-        date_string = self.invoice.invoice_date
+        date_string = self.invoice.invoice_issue_date
         self.pdf.drawString(self.left + value_padding, bottom, date_string)
 
-        invoice_date_string = _("Data wykonania usługi:")
-        self.pdf.setFont('DejaVu', self.bigFontSize)
-        bottom -= self.bigFontSize + padding
-        self.pdf.drawString(self.left, bottom, invoice_date_string)
+        # if not self.invoice.invoice_date:
+        #     invoice_date_string = _("Data wykonania usługi:")
+        #     self.pdf.setFont('DejaVu', self.bigFontSize)
+        #     bottom -= self.bigFontSize + padding
+        #     self.pdf.drawString(self.left, bottom, invoice_date_string)
+        #     invoice_date_value_string = self.invoice.invoice_date
+        #     self.pdf.drawString(self.left + value_padding, bottom, invoice_date_value_string)
 
-        invoice_date_value_string = self.invoice.invoice_date
-        self.pdf.drawString(self.left + value_padding, bottom, invoice_date_value_string)
+        # self.pdf.setFont('DejaVu', self.bigFontSize)
+        # bottom -= self.bigFontSize + padding
+        # self.pdf.drawString(self.left, bottom, _("Miejsce wystawienia:"))
 
-        self.pdf.setFont('DejaVu', self.bigFontSize)
-        bottom -= self.bigFontSize + padding
-        self.pdf.drawString(self.left, bottom, _("Miejsce wystawienia:"))
-
-        place_string = self.invoice.invoice_place
-        self.pdf.drawString(self.left + value_padding, bottom, place_string)
+        # place_string = self.invoice.invoice_place
+        # self.pdf.drawString(self.left + value_padding, bottom, place_string)
 
 
     def drawSeller(self, top):
@@ -438,7 +438,7 @@ class SimpleInvoice(BaseInvoice):
         row_top -= row_height
         row_idx += 1
 
-        for key, item in self.invoice.generate_breakdown_vat().iteritems():
+        for key, item in self.invoice.generate_breakdown_vat().items():
             if row_idx % 2 == 1:
                 self.pdf.setFillColor(self.fillLightColor)
                 self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
@@ -499,18 +499,20 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.setFillColor(self.textColor)
         self.pdf.setFont('DejaVu', self.bigFontSize)
 
-        row_top -= 1.5 * self.bigFontSize
-        self.pdf.drawString(self.left, row_top, _("Konto bankowe:"))
-        self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_account)
+        if not self.invoice.provider.bank_account:
+            row_top -= 1.5 * self.bigFontSize
+            self.pdf.drawString(self.left, row_top, _("Konto bankowe:"))
+            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_account)
 
-        if self.invoice.provider.bank_data.strip():
+        if not self.invoice.provider.bank_data and self.invoice.provider.bank_data.strip():
             row_top -= 1.5 * self.bigFontSize
             self.pdf.drawString(self.left, row_top, _("Bank:"))
             self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_data)
 
-        row_top -= 1.5 * self.bigFontSize
-        self.pdf.drawString(self.left, row_top, _("Termin płatności:"))
-        self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.payment_terms)
+        if not self.invoice.provider.payment_terms:
+            row_top -= 1.5 * self.bigFontSize
+            self.pdf.drawString(self.left, row_top, _("Termin płatności:"))
+            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.payment_terms)
 
         if self.invoice.provider.exchange_rate.strip():
             row_top -= 1.5 * self.bigFontSize
