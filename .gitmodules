@@ -1,0 +1,3 @@
+[submodule "scraping-ebay"]
+	path = scraping-ebay
+	url = https://github.com/marekkozl/scraping-ebay

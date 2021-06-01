@@ -2,11 +2,11 @@
 
 APP_NAME = 'InvoiceGenerator'
 
-FONT_PATH = './/fonts//DejaVuSans.ttf'
-FONT_BOLD_PATH = './/fonts//DejaVuSans-Bold.ttf'
+FONT_PATH = '.\\fonts\\DejaVuSans.ttf'
+FONT_BOLD_PATH = '.\\fonts\\DejaVuSans-Bold.ttf'
 
-PATH_TO_DATA_SOURCES = 'C:\\Repos\\scraping-ebay\\'
-PATH_TO_GENERATED_INVOICES = './/invoice_data//'
+PATH_TO_DATA_SOURCES = '.\\scraping-ebay\\data\\'
+PATH_TO_GENERATED_INVOICES = '.\\data\\'
 CRAWLER_CATEGORIES = ['books', 'carpets', 'clothes', 'computers', 'console', 'furniture', 'kids', 'wine']
 
 FAKER_REGION = 'en_US'
@@ -37,7 +37,7 @@ pl_2_plen = {
     'VAT':'VAT',
     'Razem:':'Razem/Total',
     'Termin płatności:':'Termin płatności/Payment terms:',
-    'Konto bankowe:':'Konto bankowe/Bank account:',
+    'Konto bankowe:':'Konto bankowe/IBAN:',
     'Bank:':'Bank:',
     'Kurs NBP:':'Kurs NBP/Official exchange rate:',
     'Uwagi:':'Uwagi/Notes:'
@@ -67,7 +67,7 @@ pl_2_en = {
     'VAT':'VAT',
     'Razem:':'Total',
     'Termin płatności:':'Payment terms:',
-    'Konto bankowe:':'Bank account:',
+    'Konto bankowe:':'IBAN:',
     'Bank:':'Bank:',
     'Kurs NBP:':'Official exchange rate:',
     'Uwagi:':'Notes:'

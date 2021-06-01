@@ -14,7 +14,6 @@ from conf import _, FONT_PATH, FONT_BOLD_PATH
 import conf
 from api import Invoice
 
-
 def format_amount(amount):
     return "{:,.2f}".format(amount).replace(",", " ").replace(".", ",")
 
@@ -60,14 +59,14 @@ from gettext import NullTranslations
 
 class SimpleInvoice(BaseInvoice):
 
-    def __init__(self, invoice, filename, language=''):
+    def __init__(self, invoice, filename, language='', faker=None, iban_color_flag=False, iban_charspace_flag = False, invoice_number=0):
         if language == 'en':
             conf.lang = 'en'
         else:
             conf.lang = 'pl'
 
         super(SimpleInvoice, self).__init__(invoice)
-
+        self.faker = faker
         self.pageSize = A4
         self.width = self.pageSize[0]
         self.height = self.pageSize[1]
@@ -85,11 +84,19 @@ class SimpleInvoice(BaseInvoice):
         self.fillDarkColor = (0.8, 0.8, 0.8)
         self.fillLightColor = (0.9, 0.9, 0.9)
         self.textColor = (0, 0, 0)
-
+        self.filename = filename + str(invoice_number)
+        self.iban_color = None
+        self.iban_char_space = 0
+        if iban_color_flag:
+            self.iban_color = self.faker.pyint(min_value=240, max_value=254)
+            self.filename += '_color_B_' + str(self.iban_color)
+        if iban_charspace_flag:
+            self.iban_char_space = invoice_number + 1
+            self.filename += '_charspace_' + str(self.iban_char_space)
         pdfmetrics.registerFont(TTFont('DejaVu', FONT_PATH))
         pdfmetrics.registerFont(TTFont('DejaVu-Bold', FONT_BOLD_PATH))
-
-        self.pdf = NumberedCanvas(filename, pagesize=self.pageSize)
+        
+        self.pdf = NumberedCanvas(self.filename + '.pdf', pagesize=self.pageSize)
 
         self.pdf.setStrokeColor(self.textColor)
         self.gen()
@@ -186,6 +193,15 @@ class SimpleInvoice(BaseInvoice):
             bottom -= self.normalFontSize + mm
             self.pdf.drawString(self.left + padding_left, bottom, seller_nip_string)
 
+        if self.invoice.provider.bank_account:
+            bottom -= self.normalFontSize + mm
+            iban_string = _("Konto bankowe:") + ' ' + self.invoice.provider.bank_account
+            if self.iban_color:
+                iban_size = mm*11
+                self.pdf.setFillColorRGB(1,1,self.iban_color/255)
+                self.pdf.rect(self.left + padding_left + iban_size, bottom, mm*12/5*len(self.invoice.provider.bank_account), self.normalFontSize, 0,1)
+                self.pdf.setFillColor(self.textColor)
+            self.pdf.drawString(self.left + padding_left, bottom, iban_string, charSpace=self.iban_char_space/1000)
         return bottom
 
     def drawPurchaser(self, top):
@@ -499,10 +515,6 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.setFillColor(self.textColor)
         self.pdf.setFont('DejaVu', self.bigFontSize)
 
-        if not self.invoice.provider.bank_account:
-            row_top -= 1.5 * self.bigFontSize
-            self.pdf.drawString(self.left, row_top, _("Konto bankowe:"))
-            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_account)
 
         if not self.invoice.provider.bank_data and self.invoice.provider.bank_data.strip():
             row_top -= 1.5 * self.bigFontSize
