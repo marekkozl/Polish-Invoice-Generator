@@ -10,21 +10,22 @@ import InvoiceGenerator
 version = InvoiceGenerator.__versionstr__
 
 # release a version, publish to GitHub and PyPI
-if sys.argv[-1] == 'publish':
+if sys.argv[-1] == "publish":
     command = lambda cmd: subprocess.check_call(shlex.split(cmd))
-    command('git tag v' + version)
-    command('git push --tags origin master:master')
-    command('python setup.py sdist upload')
+    command("git tag v" + version)
+    command("git push --tags origin master:master")
+    command("python setup.py sdist upload")
     sys.exit()
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-description = ''
 
-for file_ in ('README', 'CHANGES', 'CONTRIBUTORS'):
-    description += read('%s.rst' % file_) + '\n\n'
+description = ""
+
+for file_ in ("README", "CHANGES", "CONTRIBUTORS"):
+    description += read("%s.rst" % file_) + "\n\n"
 
 
 setup(
@@ -36,7 +37,7 @@ setup(
     license="BSD",
     keywords="invoice invoices generator",
     url="https://github.com/creckx/InvoiceGenerator",
-    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
     long_description=description,
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -45,9 +46,7 @@ setup(
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
-    install_requires=[
-        "reportlab", "pillow", "qrplatba>=0.3.3"
-    ],
-    package_data={'InvoiceGenerator': ['locale/*/LC_MESSAGES/*']},
-    test_suite='tests',
+    install_requires=["reportlab", "pillow", "qrplatba>=0.3.3"],
+    package_data={"InvoiceGenerator": ["locale/*/LC_MESSAGES/*"]},
+    test_suite="tests",
 )

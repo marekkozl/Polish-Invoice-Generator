@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append('C:\\Repos\\Polish-Invoice-Generator\\InvoiceGenerator')
+
+sys.path.append("C:\\Repos\\Polish-Invoice-Generator\\InvoiceGenerator")
 from conf import _
 
-__all__ = ['Client', 'Provider', 'Creator', 'Item', 'Invoice']
+__all__ = ["Client", "Provider", "Creator", "Item", "Invoice"]
 
 
 class UnicodeProperty(object):
@@ -17,9 +18,30 @@ class UnicodeProperty(object):
 
 
 class Address(UnicodeProperty):
-    _attrs = ('name', 'address1', 'address2', 'country', 'bank_data', 'bank_account', 'payment_terms', 'nip', 'echange_rate')
+    _attrs = (
+        "name",
+        "address1",
+        "address2",
+        "country",
+        "bank_data",
+        "bank_account",
+        "payment_terms",
+        "nip",
+        "echange_rate",
+    )
 
-    def __init__(self, name, address1='', address2='', country='', bank_data='', bank_account='', payment_terms='', nip='', exchange_rate=''):
+    def __init__(
+        self,
+        name,
+        address1="",
+        address2="",
+        country="",
+        bank_data="",
+        bank_account="",
+        payment_terms="",
+        nip="",
+        exchange_rate="",
+    ):
         self.name = name
         self.address1 = address1
         self.address2 = address2
@@ -40,8 +62,9 @@ class Provider(Address):
 
 
 class Item(object):
-
-    def __init__(self, name, count, unit_price, tax, use_vat=True, use_vat_txt='', unit=_("szt.")):
+    def __init__(
+        self, name, count, unit_price, tax, use_vat=True, use_vat_txt="", unit=_("szt.")
+    ):
         self._count = float(count)
         self._unit_price = float(unit_price)
         self._name = str(name)
@@ -115,6 +138,7 @@ class Item(object):
     def use_vat_txt(self):
         return self._use_vat_txt
 
+
 class GroupedItem(object):
     def __init__(self, vat, vat_txt):
         self.net = 0
@@ -129,13 +153,30 @@ class GroupedItem(object):
     def gross(self):
         return self.net + self.tax
 
+
 class Invoice(UnicodeProperty):
-    _attrs = ('title', 'variable_symbol', 'specific_symbol', 'pay_type',
-              'currency', 'currency_locale')
+    _attrs = (
+        "title",
+        "variable_symbol",
+        "specific_symbol",
+        "pay_type",
+        "currency",
+        "currency_locale",
+    )
 
     rounding_result = False
 
-    def __init__(self, client, provider, invoice_number, invoice_issue_date, invoice_date, invoice_place, currency_string='$ ', notes=''):
+    def __init__(
+        self,
+        client,
+        provider,
+        invoice_number,
+        invoice_issue_date,
+        invoice_date,
+        invoice_place,
+        currency_string="$ ",
+        notes="",
+    ):
         assert isinstance(client, Client)
         assert isinstance(provider, Provider)
 
@@ -153,7 +194,7 @@ class Invoice(UnicodeProperty):
         self.notes = notes
 
         for attr in self._attrs:
-            self.__setattr__(attr, '')
+            self.__setattr__(attr, "")
 
     @property
     def price(self):
@@ -217,8 +258,7 @@ class Invoice(UnicodeProperty):
 
     def generate_breakdown_vat_table(self):
         rows = []
-        for vat,items in self.generate_breakdown_vat().iteritems():
-             rows.append((vat, items['total'], items['total_tax'], items['tax']))
+        for vat, items in self.generate_breakdown_vat().iteritems():
+            rows.append((vat, items["total"], items["total_tax"], items["tax"]))
 
         return rows
-

@@ -14,12 +14,12 @@ from conf import _, FONT_PATH, FONT_BOLD_PATH
 import conf
 from api import Invoice
 
+
 def format_amount(amount):
     return "{:,.2f}".format(amount).replace(",", " ").replace(".", ",")
 
 
 class BaseInvoice(object):
-
     def __init__(self, invoice):
         # assert isinstance(invoice, Invoice)
 
@@ -51,19 +51,32 @@ class NumberedCanvas(Canvas):
 
     def draw_page_number(self, page_count):
         self.setFont("DejaVu", 9)
-        self.drawRightString(self._pagesize[0] - 15*mm, 6*mm,
-            _("strona %(page_number)d z %(page_count)d") % {"page_number": self._pageNumber, "page_count": page_count})
+        self.drawRightString(
+            self._pagesize[0] - 15 * mm,
+            6 * mm,
+            _("strona %(page_number)d z %(page_count)d")
+            % {"page_number": self._pageNumber, "page_count": page_count},
+        )
 
 
 from gettext import NullTranslations
 
-class SimpleInvoice(BaseInvoice):
 
-    def __init__(self, invoice, filename, language='', faker=None, iban_color_flag=False, iban_charspace_flag = False, invoice_number=0):
-        if language == 'en':
-            conf.lang = 'en'
+class SimpleInvoice(BaseInvoice):
+    def __init__(
+        self,
+        invoice,
+        filename,
+        language="",
+        faker=None,
+        iban_color_flag=False,
+        iban_charspace_flag=False,
+        invoice_number=0,
+    ):
+        if language == "en":
+            conf.lang = "en"
         else:
-            conf.lang = 'pl'
+            conf.lang = "pl"
 
         super(SimpleInvoice, self).__init__(invoice)
         self.faker = faker
@@ -89,14 +102,14 @@ class SimpleInvoice(BaseInvoice):
         self.iban_char_space = 0
         if iban_color_flag:
             self.iban_color = self.faker.pyint(min_value=240, max_value=254)
-            self.filename += '_color_B_' + str(self.iban_color)
+            self.filename += "_color_B_" + str(self.iban_color)
         if iban_charspace_flag:
             self.iban_char_space = invoice_number + 1
-            self.filename += '_charspace_' + str(self.iban_char_space)
-        pdfmetrics.registerFont(TTFont('DejaVu', FONT_PATH))
-        pdfmetrics.registerFont(TTFont('DejaVu-Bold', FONT_BOLD_PATH))
-        
-        self.pdf = NumberedCanvas(self.filename + '.pdf', pagesize=self.pageSize)
+            self.filename += "_charspace_" + str(self.iban_char_space)
+        pdfmetrics.registerFont(TTFont("DejaVu", FONT_PATH))
+        pdfmetrics.registerFont(TTFont("DejaVu-Bold", FONT_BOLD_PATH))
+
+        self.pdf = NumberedCanvas(self.filename + ".pdf", pagesize=self.pageSize)
 
         self.pdf.setStrokeColor(self.textColor)
         self.gen()
@@ -122,7 +135,9 @@ class SimpleInvoice(BaseInvoice):
     def drawRightSideRect(self):
         self.pdf.setFillColor(self.fillDarkColor)
         width = 4 * mm
-        self.pdf.rect(self.right + 4 * mm, 0, width, self.height, stroke=False, fill=True)
+        self.pdf.rect(
+            self.right + 4 * mm, 0, width, self.height, stroke=False, fill=True
+        )
         self.pdf.setFillColor(self.textColor)
 
     def drawLeftSideRect(self, y):
@@ -135,13 +150,15 @@ class SimpleInvoice(BaseInvoice):
         self.headerLeft = self.width / 2
         padding = 1.5 * mm
         value_padding = 85 * mm
-        invoice_number_string = _("Faktura VAT nr: {}").format(self.invoice.invoice_number)
-        self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
+        invoice_number_string = _("Faktura VAT nr: {}").format(
+            self.invoice.invoice_number
+        )
+        self.pdf.setFont("DejaVu-Bold", self.largeFontSize)
         bottom = self.top
         self.pdf.drawString(self.left, bottom, invoice_number_string)
 
-        self.pdf.setFont('DejaVu', self.bigFontSize)
-        bottom -= self.bigFontSize + padding*3
+        self.pdf.setFont("DejaVu", self.bigFontSize)
+        bottom -= self.bigFontSize + padding * 3
         self.pdf.drawString(self.left, bottom, _("Wystawiono dnia:"))
 
         date_string = self.invoice.invoice_issue_date
@@ -162,9 +179,8 @@ class SimpleInvoice(BaseInvoice):
         # place_string = self.invoice.invoice_place
         # self.pdf.drawString(self.left + value_padding, bottom, place_string)
 
-
     def drawSeller(self, top):
-        self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
+        self.pdf.setFont("DejaVu-Bold", self.largeFontSize)
         padding_left = 1 * mm
         bottom = top
         self.pdf.drawString(self.left, bottom, _("Sprzedawca:"))
@@ -172,7 +188,7 @@ class SimpleInvoice(BaseInvoice):
         self.drawLeftSideRect(bottom)
 
         seller_name_string = self.invoice.provider.name
-        self.pdf.setFont('DejaVu', self.normalFontSize)
+        self.pdf.setFont("DejaVu", self.normalFontSize)
         bottom -= self.normalFontSize + 4 * mm
         self.pdf.drawString(self.left + padding_left, bottom, seller_name_string)
 
@@ -189,53 +205,75 @@ class SimpleInvoice(BaseInvoice):
         self.pdf.drawString(self.left + padding_left, bottom, provider_country_string)
 
         if self.invoice.provider.nip and self.invoice.provider.nip.strip():
-            seller_nip_string = _('NIP: %(nip)s') % {"nip": self.invoice.provider.nip}
+            seller_nip_string = _("NIP: %(nip)s") % {"nip": self.invoice.provider.nip}
             bottom -= self.normalFontSize + mm
             self.pdf.drawString(self.left + padding_left, bottom, seller_nip_string)
 
         if self.invoice.provider.bank_account:
             bottom -= self.normalFontSize + mm
-            iban_string = _("Konto bankowe:") + ' ' + self.invoice.provider.bank_account
+            iban_string = _("Konto bankowe:") + " " + self.invoice.provider.bank_account
             if self.iban_color:
-                iban_size = mm*11
-                self.pdf.setFillColorRGB(1,1,self.iban_color/255)
-                self.pdf.rect(self.left + padding_left + iban_size, bottom, mm*12/5*len(self.invoice.provider.bank_account), self.normalFontSize, 0,1)
+                iban_size = mm * 11
+                self.pdf.setFillColorRGB(1, 1, self.iban_color / 255)
+                self.pdf.rect(
+                    self.left + padding_left + iban_size,
+                    bottom,
+                    mm * 12 / 5 * len(self.invoice.provider.bank_account),
+                    self.normalFontSize,
+                    0,
+                    1,
+                )
                 self.pdf.setFillColor(self.textColor)
-            self.pdf.drawString(self.left + padding_left, bottom, iban_string, charSpace=self.iban_char_space/1000)
+            self.pdf.drawString(
+                self.left + padding_left,
+                bottom,
+                iban_string,
+                charSpace=self.iban_char_space / 1000,
+            )
         return bottom
 
     def drawPurchaser(self, top):
-        self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
+        self.pdf.setFont("DejaVu-Bold", self.largeFontSize)
         padding_left = 1 * mm
         bottom = top
         self.pdf.drawString(self.headerLeft, bottom, _("Nabywca:"))
 
         purchaser_name_string = self.invoice.client.name
-        self.pdf.setFont('DejaVu', self.normalFontSize)
+        self.pdf.setFont("DejaVu", self.normalFontSize)
         bottom -= self.normalFontSize + 4 * mm
-        self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_name_string)
+        self.pdf.drawString(
+            self.headerLeft + padding_left, bottom, purchaser_name_string
+        )
 
         purchaser_address_string = self.invoice.client.address1
         bottom -= self.normalFontSize + mm
-        self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_address_string)
+        self.pdf.drawString(
+            self.headerLeft + padding_left, bottom, purchaser_address_string
+        )
 
         purchaser_code_string = self.invoice.client.address2
         bottom -= self.normalFontSize + mm
-        self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_code_string)
+        self.pdf.drawString(
+            self.headerLeft + padding_left, bottom, purchaser_code_string
+        )
 
         purchaser_country_string = self.invoice.client.country
         bottom -= self.normalFontSize + mm
-        self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_country_string)
+        self.pdf.drawString(
+            self.headerLeft + padding_left, bottom, purchaser_country_string
+        )
 
         if self.invoice.client.nip and self.invoice.client.nip.strip():
-            purchaser_nip_string = _('NIP: %(nip)s') % {"nip": self.invoice.client.nip}
+            purchaser_nip_string = _("NIP: %(nip)s") % {"nip": self.invoice.client.nip}
             bottom -= self.normalFontSize + mm
-            self.pdf.drawString(self.headerLeft + padding_left, bottom, purchaser_nip_string)
+            self.pdf.drawString(
+                self.headerLeft + padding_left, bottom, purchaser_nip_string
+            )
 
         return bottom
 
     def drawInvoiceItems(self, y):
-        self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
+        self.pdf.setFont("DejaVu-Bold", self.largeFontSize)
         self.pdf.drawString(self.left, y, _("POZYCJE FAKTURY"))
 
         self.drawLeftSideRect(y)
@@ -244,7 +282,7 @@ class SimpleInvoice(BaseInvoice):
         table_width = self.right - self.left
         cell_padding = 2 * mm
         column_padding = 3.5 * mm
-        self.pdf.setFont('DejaVu-Bold', self.normalFontSize)
+        self.pdf.setFont("DejaVu-Bold", self.normalFontSize)
 
         lp_max_width = 8 * mm
         lp_left = self.left + cell_padding
@@ -270,12 +308,27 @@ class SimpleInvoice(BaseInvoice):
         price_gross_max_width = 18 * mm
         price_gross_left = vat_left + vat_max_width + column_padding
 
-        center_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize,
-                                      alignment=TA_CENTER, leading=10)
-        left_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize, alignment=TA_LEFT,
-                                    leading=10)
-        right_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize, alignment=TA_RIGHT,
-                                     leading=10)
+        center_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu-Bold",
+            fontSize=self.tinyFontSize,
+            alignment=TA_CENTER,
+            leading=10,
+        )
+        left_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu-Bold",
+            fontSize=self.tinyFontSize,
+            alignment=TA_LEFT,
+            leading=10,
+        )
+        right_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu-Bold",
+            fontSize=self.tinyFontSize,
+            alignment=TA_RIGHT,
+            leading=10,
+        )
         header_max_height = 0
 
         par = Paragraph(_("Lp."), center_style)
@@ -301,7 +354,9 @@ class SimpleInvoice(BaseInvoice):
         par = Paragraph(_("Cena jedn. netto"), right_style)
         par_width, par_height = par.wrapOn(self.pdf, unit_price_net_max_width, 0)
         header_max_height = max(header_max_height, par_height)
-        par.drawOn(self.pdf, unit_price_net_left, table_top - (cell_padding + par_height))
+        par.drawOn(
+            self.pdf, unit_price_net_left, table_top - (cell_padding + par_height)
+        )
 
         par = Paragraph(_("Wartość netto"), right_style)
         par_width, par_height = par.wrapOn(self.pdf, price_net_max_width, 0)
@@ -322,12 +377,27 @@ class SimpleInvoice(BaseInvoice):
         row_height = header_max_height + 2 * cell_padding
         self.pdf.rect(self.left, table_top - row_height, table_width, row_height)
 
-        center_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize,
-                                      alignment=TA_CENTER, leading=10)
-        left_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize, alignment=TA_LEFT,
-                                    leading=10)
-        right_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize, alignment=TA_RIGHT,
-                                     leading=10)
+        center_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu",
+            fontSize=self.tinyFontSize,
+            alignment=TA_CENTER,
+            leading=10,
+        )
+        left_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu",
+            fontSize=self.tinyFontSize,
+            alignment=TA_LEFT,
+            leading=10,
+        )
+        right_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu",
+            fontSize=self.tinyFontSize,
+            alignment=TA_RIGHT,
+            leading=10,
+        )
 
         row_top = table_top - row_height
 
@@ -348,7 +418,9 @@ class SimpleInvoice(BaseInvoice):
                 self.pdf.setFillColorRGB(1, 1, 1)
 
             row_height = name_height + 2 * cell_padding
-            self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1)
+            self.pdf.rect(
+                self.left, row_top - row_height, table_width, row_height, fill=1
+            )
 
             name_height = 0
             for line in lines:
@@ -372,14 +444,16 @@ class SimpleInvoice(BaseInvoice):
 
             par = Paragraph(format_amount(item.unit_price), right_style)
             par_width, par_height = par.wrapOn(self.pdf, unit_price_net_max_width, 0)
-            par.drawOn(self.pdf, unit_price_net_left, row_top - (cell_padding + par_height))
+            par.drawOn(
+                self.pdf, unit_price_net_left, row_top - (cell_padding + par_height)
+            )
 
             par = Paragraph(format_amount(item.total_net_price), right_style)
             par_width, par_height = par.wrapOn(self.pdf, price_net_max_width, 0)
             par.drawOn(self.pdf, price_net_left, row_top - (cell_padding + par_height))
 
             if item.use_vat == False:
-                 par = Paragraph(item.use_vat_txt, right_style)
+                par = Paragraph(item.use_vat_txt, right_style)
             else:
                 par = Paragraph("%d%%" % item.tax, right_style)
             par_width, par_height = par.wrapOn(self.pdf, vat_max_width, 0)
@@ -387,7 +461,9 @@ class SimpleInvoice(BaseInvoice):
 
             par = Paragraph(format_amount(item.total_tax), right_style)
             par_width, par_height = par.wrapOn(self.pdf, price_gross_max_width, 0)
-            par.drawOn(self.pdf, price_gross_left, row_top - (cell_padding + par_height))
+            par.drawOn(
+                self.pdf, price_gross_left, row_top - (cell_padding + par_height)
+            )
 
             row_top -= row_height
             idx += 1
@@ -396,7 +472,7 @@ class SimpleInvoice(BaseInvoice):
 
     def drawSummary(self, y):
         self.pdf.setFillColor(self.textColor)
-        self.pdf.setFont('DejaVu-Bold', self.largeFontSize)
+        self.pdf.setFont("DejaVu-Bold", self.largeFontSize)
         self.pdf.drawString(self.left, y, _("PODSUMOWANIE"))
 
         self.drawLeftSideRect(y)
@@ -405,7 +481,7 @@ class SimpleInvoice(BaseInvoice):
         table_width = self.right - self.left
         cell_padding = 2 * mm
         column_padding = 3.5 * mm
-        self.pdf.setFont('DejaVu-Bold', self.normalFontSize)
+        self.pdf.setFont("DejaVu-Bold", self.normalFontSize)
 
         title_max_width = 53 * mm
         title_left = self.left + cell_padding
@@ -422,14 +498,34 @@ class SimpleInvoice(BaseInvoice):
         gross_max_width = 30 * mm
         gross_left = tax_left + tax_max_width + column_padding
 
-        center_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize,
-                                      alignment=TA_CENTER, leading=10)
-        center_normal_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize,
-                                      alignment=TA_CENTER, leading=10)
-        right_style = ParagraphStyle('normal', fontName='DejaVu-Bold', fontSize=self.tinyFontSize, alignment=TA_RIGHT,
-                                     leading=10)
-        right_normal_style = ParagraphStyle('normal', fontName='DejaVu', fontSize=self.tinyFontSize,
-                                            alignment=TA_RIGHT, leading=10)
+        center_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu-Bold",
+            fontSize=self.tinyFontSize,
+            alignment=TA_CENTER,
+            leading=10,
+        )
+        center_normal_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu",
+            fontSize=self.tinyFontSize,
+            alignment=TA_CENTER,
+            leading=10,
+        )
+        right_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu-Bold",
+            fontSize=self.tinyFontSize,
+            alignment=TA_RIGHT,
+            leading=10,
+        )
+        right_normal_style = ParagraphStyle(
+            "normal",
+            fontName="DejaVu",
+            fontSize=self.tinyFontSize,
+            alignment=TA_RIGHT,
+            leading=10,
+        )
 
         row_top = table_top
         row_idx = 0
@@ -457,7 +553,14 @@ class SimpleInvoice(BaseInvoice):
         for key, item in self.invoice.generate_breakdown_vat().items():
             if row_idx % 2 == 1:
                 self.pdf.setFillColor(self.fillLightColor)
-                self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
+                self.pdf.rect(
+                    self.left,
+                    row_top - row_height,
+                    table_width,
+                    row_height,
+                    fill=1,
+                    stroke=0,
+                )
 
             if key == -1:
                 par = Paragraph(item.vat_txt, center_normal_style)
@@ -484,7 +587,14 @@ class SimpleInvoice(BaseInvoice):
 
         if row_idx % 2 == 1:
             self.pdf.setFillColor(self.fillLightColor)
-            self.pdf.rect(self.left, row_top - row_height, table_width, row_height, fill=1, stroke=0)
+            self.pdf.rect(
+                self.left,
+                row_top - row_height,
+                table_width,
+                row_height,
+                fill=1,
+                stroke=0,
+            )
 
         summary_data = self.invoice.items_summary()
 
@@ -492,15 +602,24 @@ class SimpleInvoice(BaseInvoice):
         par_width, par_height = par.wrapOn(self.pdf, title_max_width, 0)
         par.drawOn(self.pdf, title_left, row_top - (cell_padding + par_height))
 
-        par = Paragraph(self.invoice.currency_string+format_amount(summary_data["net"]), right_style)
+        par = Paragraph(
+            self.invoice.currency_string + format_amount(summary_data["net"]),
+            right_style,
+        )
         par_width, par_height = par.wrapOn(self.pdf, net_max_width, 0)
         par.drawOn(self.pdf, net_left, row_top - (cell_padding + par_height))
 
-        par = Paragraph(self.invoice.currency_string+format_amount(summary_data["tax"]), right_style)
+        par = Paragraph(
+            self.invoice.currency_string + format_amount(summary_data["tax"]),
+            right_style,
+        )
         par_width, par_height = par.wrapOn(self.pdf, tax_max_width, 0)
         par.drawOn(self.pdf, tax_left, row_top - (cell_padding + par_height))
 
-        par = Paragraph(self.invoice.currency_string+format_amount(summary_data["gross"]), right_style)
+        par = Paragraph(
+            self.invoice.currency_string + format_amount(summary_data["gross"]),
+            right_style,
+        )
         par_width, par_height = par.wrapOn(self.pdf, gross_max_width, 0)
         par.drawOn(self.pdf, gross_left, row_top - (cell_padding + par_height))
 
@@ -513,23 +632,31 @@ class SimpleInvoice(BaseInvoice):
         value_padding = 85 * mm
         self.pdf.setStrokeColor(self.textColor)
         self.pdf.setFillColor(self.textColor)
-        self.pdf.setFont('DejaVu', self.bigFontSize)
+        self.pdf.setFont("DejaVu", self.bigFontSize)
 
-
-        if not self.invoice.provider.bank_data and self.invoice.provider.bank_data.strip():
+        if (
+            not self.invoice.provider.bank_data
+            and self.invoice.provider.bank_data.strip()
+        ):
             row_top -= 1.5 * self.bigFontSize
             self.pdf.drawString(self.left, row_top, _("Bank:"))
-            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.bank_data)
+            self.pdf.drawString(
+                self.left + value_padding, row_top, self.invoice.provider.bank_data
+            )
 
         if not self.invoice.provider.payment_terms:
             row_top -= 1.5 * self.bigFontSize
             self.pdf.drawString(self.left, row_top, _("Termin płatności:"))
-            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.payment_terms)
+            self.pdf.drawString(
+                self.left + value_padding, row_top, self.invoice.provider.payment_terms
+            )
 
         if self.invoice.provider.exchange_rate.strip():
             row_top -= 1.5 * self.bigFontSize
             self.pdf.drawString(self.left, row_top, _("Kurs NBP:"))
-            self.pdf.drawString(self.left + value_padding, row_top, self.invoice.provider.exchange_rate)
+            self.pdf.drawString(
+                self.left + value_padding, row_top, self.invoice.provider.exchange_rate
+            )
 
         if self.invoice.notes and self.invoice.notes.strip():
             row_top -= 1.5 * self.bigFontSize
@@ -539,4 +666,3 @@ class SimpleInvoice(BaseInvoice):
             for line in lines:
                 self.pdf.drawString(self.left + value_padding, row_top, line)
                 row_top -= 1.5 * self.bigFontSize
-            
