@@ -5,5 +5,4 @@ InvoiceGenerator.egg-info/
 build/
 dist/
 debug.log
-scraping-ebay/
 data/
